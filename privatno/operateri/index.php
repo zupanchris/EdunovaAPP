@@ -28,49 +28,31 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 					
 					if(isset($_SESSION['brojRedova']) && ($_GET['uvjet']==""))
 					{
-					echo "Petlja 1";
-					$ukupnoRedova = $_SESSION['brojRedova'];
-					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);								
+					$ukupnoRedova = $_SESSION['brojRedova'];							
 					}
 					else if(isset($_SESSION['trazilica']) && ($_GET['uvjet'])===$_SESSION['trazeniPojam'])
-					{					
-					echo "Petlja 2";
-					$ukupnoRedova = $_SESSION['trazilica'];
-					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);					
+					{
+					$ukupnoRedova = $_SESSION['trazilica'];			
 					}
 					else if(isset($_SESSION['trazilica']) && ($_GET['uvjet'])!==$_SESSION['trazeniPojam'])
-					{					
-					echo "Petlja 2.5";
+					{
 					unset($_SESSION['trazilica']);					
 					unset($_SESSION['trazeniPojam']);
-					$izraz = $veza->prepare("select count(*) from operater 
-					where concat(ime,prezime,email,uloga) like :uvjet");
-					$izraz->execute(array("uvjet"=>$uvjet));
-					$_SESSION['trazilica'] = $izraz->fetchColumn();
+					dbPretraga('trazilica', $veza, $uvjet);
 					$ukupnoRedova = $_SESSION['trazilica'];
-					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);
 					$_SESSION['trazeniPojam'] = $_GET['uvjet'];
 					}
 					else if(isset($_SESSION['brojRedova']) && ($_GET['uvjet']))
 					{
-				  	echo "Petlja 3";
-					$izraz = $veza->prepare("select count(*) from operater 
-					where concat(ime,prezime,email,uloga) like :uvjet");
-					$izraz->execute(array("uvjet"=>$uvjet));
-					$_SESSION['trazilica'] = $izraz->fetchColumn();
+					dbPretraga('trazilica', $veza, $uvjet);
 					$ukupnoRedova = $_SESSION['trazilica'];
-					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);
 					$_SESSION['trazeniPojam'] = $_GET['uvjet'];
 					}
-					else{					
-					echo "Session brojRedova nije započet";
-					$izraz = $veza->prepare("select count(*) from operater 
-					where concat(ime,prezime,email,uloga) like :uvjet");
-					$izraz->execute(array("uvjet"=>$uvjet));
-					$_SESSION['brojRedova'] = $izraz->fetchColumn();
+					else{
+					dbPretraga('brojRedova', $veza, $uvjet);
 					$ukupnoRedova = $_SESSION['brojRedova'];
-					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);	
-					}
+					}					
+					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);
 					
 					if($stranica<1){
 						$stranica=1;
@@ -79,9 +61,12 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 						$stranica=$ukupnoStranica;
 					}
 					
+					//create index uvjet on operater (ime,prezime,email,uloga);
+
+					//select * from operater use index (uvjet);
 
 					$izraz = $veza->prepare("select * from operater 
-					where concat(ime,prezime,email,uloga) like :uvjet
+					use index (uvjet) where concat(ime,prezime,email,uloga) like :uvjet
 					order by uloga, prezime, ime limit :stranica, :brojRezultataPoStranici");
 					$izraz->bindValue("stranica", $stranica* $brojRezultataPoStranici -  $brojRezultataPoStranici , PDO::PARAM_INT);
 					$izraz->bindValue("brojRezultataPoStranici", $brojRezultataPoStranici, PDO::PARAM_INT);

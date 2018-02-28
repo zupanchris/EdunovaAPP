@@ -42,11 +42,9 @@ function oznacenCheckbox($kljuc,$vrijednost){
 	return "";
 }
 
-function dbPretraga($red){
+function dbPretraga($red,$veza,$uvjet){
 	$izraz = $veza->prepare("select count(*) from operater 
 	where concat(ime,prezime,email,uloga) like :uvjet");
 	$izraz->execute(array("uvjet"=>$uvjet));
-	$_SESSION['$red'] = $izraz->fetchColumn();
-	$ukupnoRedova = $_SESSION['$red'];
-	$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);
+	$_SESSION[$red] = $izraz->fetchColumn();
 }
