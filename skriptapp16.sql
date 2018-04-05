@@ -15,7 +15,9 @@ email varchar(50) not null,
 lozinka char(32) not null,
 ime varchar(50) not null,
 prezime varchar(50) not null,
-uloga varchar(20) not null
+uloga varchar(20) not null,
+sessionid char(32),
+aktivan boolean not null default false
 );
 
 create table smjer(
@@ -37,7 +39,8 @@ datumpocetka datetime
 create table predavac(
 sifra int not null primary key auto_increment,
 osoba int not null,
-placa decimal(18,2)
+placa decimal(18,2),
+slika varchar(255)
 );
 
 create table polaznik(
@@ -60,6 +63,20 @@ grupa int not null,
 polaznik int not null
 );
 
+create table program(
+sifra int not null primary key auto_increment,
+putanja varchar(100) not null,
+izborniknaziv varchar(100) not null,
+brziizborniknaziv varchar(100) not null,
+uloga varchar(50) not null
+);
+
+create table programoperater(
+program int not null,
+operater int not null,
+brojotvaranja int default 0
+);
+
 #create unique index ix_oib on osoba(oib);
 
 alter table grupa add foreign key (smjer) references smjer(sifra);
@@ -72,10 +89,15 @@ alter table polaznik add foreign key (osoba) references osoba(sifra);
 alter table clan add foreign key (grupa) references grupa(sifra);
 alter table clan add foreign key (polaznik) references polaznik(sifra);
 
+alter table programoperater add foreign key (program) references program(sifra);
+alter table programoperater add foreign key (operater) references operater(sifra);
 
-insert into operater (email,lozinka,ime,prezime,uloga) values 
-('mario@edunova.hr', md5('e'),'Mario','Vukić','oper'),
-('edunova@edunova.hr', md5('e'),'Eduard','Kuzma','admin');
+
+insert into operater (email,lozinka,ime,prezime,uloga,aktivan) values 
+('mario@edunova.hr', md5('e'),'Mario','Vukić','oper',true),
+('edunova@edunova.hr', md5('e'),'Eduard','Kuzma','admin',true);
+
+
 
 insert into smjer(sifra,naziv,cijena,upisnina,brojsati) values 
 (null,'PHP programiranje',5000.99,500,130),
@@ -105,13 +127,15 @@ insert into osoba (oib,ime,prezime,email,spol) values
 ('27349341183','Chris','Župan','zupan.chris@gmail.com',1),
 ('54173404752','Matko','Pejić','pejicmatko@gmail.com',1),
 ('91069362335','Domagoj','Glavačević','glavacevic.d@gmail.com',1),
-('36906684671','Davor','Ilišević','davor.ilisevic1@gmail.com',1);
+('36906684671','Davor','Ilišević','davor.ilisevic1@gmail.com',1),
+('36906684672','Marko','Marković','mmarkovic@gmail.com',1);
 
 insert into predavac (osoba,placa) values (1,5000);
+insert into predavac (osoba,placa) values (23,5000);
 
 insert into grupa(naziv,smjer,predavac,datumpocetka) values
-('PP16',1,1,'2017-10-28'),
-('J17',2,1,'2017-10-28');
+('PP16',1,1,'2018-04-17'),
+('J17',2,1,'2018-03-28');
 
 insert into polaznik (osoba,brojugovora) values
 (2,''),
@@ -140,44 +164,14 @@ insert into clan(grupa,polaznik) values
 (1,1), (1,2), (1,3), (1,4), (1,5), (1,6), (1,7), (1,8), (1,9), (1,10), (1,11), (1,12), (1,13), (1,14), (1,15), (1,16), (1,17), (1,18), (1,19), (1,20),(1,21),(2,1),(2,21); 
 
 
+insert into program(putanja,izborniknaziv,brziizborniknaziv,uloga) values
+('privatno/smjerovi/index.php','<i class="fas fa-archive"></i> Smjerovi', '<i class="fas fa-archive fa-7x"></i> <br /> Smjerovi', ''),
+('privatno/grupe/index.php','<i class="fas fa-address-book"></i> Grupe', '<i class="fas fa-address-book fa-7x"></i> <br /> Grupe', ''),
+('privatno/polaznici/index.php','<i class="fas fa-address-card"></i> Polaznici', '<i class="fas fa-address-card fa-7x"></i> <br /> Polaznici', ''),
+('privatno/predavaci/index.php','<i class="fas fa-blind"></i> Predavači', '<i class="fas fa-blind fa-7x"></i> <br /> Predavači', ''),
+('privatno/operateri/index.php','<i class="fas fa-bug"></i> Operateri', '<i class="fas fa-bug fa-7x"></i> <br /> Operateri', 'admin');
 
-
-
-DELIMITER $$
-CREATE FUNCTION pocisti(tekst varchar(50)) RETURNS varchar(50)
-begin
-return lower(
-replace(
-replace(
-replace(
-replace(
-replace(replace(upper(tekst),' ',''),'Č','C')
-,'Š','S')
-,'Đ','D')
-,'Ć','C')
-,'Ž','Z'));
-end;
-$$
-DELIMITER ;
-
-DELIMITER $$
-CREATE FUNCTION email(ime varchar(50),prezime varchar(50)) RETURNS varchar(50)
-begin
-return concat(left(lower(pocisti(ime)),1),lower(pocisti(prezime)),'@edunova.hr');
-end;
-$$
-DELIMITER ;
-
-
-
-
-
-
-
-
-
-
-
-
-
+insert into programoperater(program,operater) values
+(1,1),(2,1),(3,1),(4,1),
+(1,2),(2,2),(3,2),(4,2),(5,2);
 

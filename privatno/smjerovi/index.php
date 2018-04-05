@@ -1,5 +1,10 @@
 <?php include_once '../../konfiguracija.php'; 
 provjeraOvlasti();
+
+$veza->exec("update programoperater set 
+brojotvaranja=brojotvaranja+1 where program=1 
+and operater=" . $_SESSION[$appID."autoriziran"]->sifra . ";");
+
 ?>
 <!doctype html>
 <html class="no-js" lang="en" dir="ltr">

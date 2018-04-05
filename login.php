@@ -35,7 +35,7 @@
 				  	echo "Neispravna kombinacija email/lozinka";
 				  } ?>
 				</form>
-
+Niste registrirani? Prijavite se <a href="registracija.php">ovdje</a>.
 			</div>
 		</div>
 		<?php include_once 'include/podnozje.php'; ?>

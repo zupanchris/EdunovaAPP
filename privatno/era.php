@@ -13,7 +13,10 @@ provjeraOvlasti();
       	
       	<div class="grid-x grid-padding-x">
 			<div class="large-12 cell">
-				<img src="<?php echo $putanjaAPP ?>img/era.png" alt="ERA" />
+				<div style="width: 100%; text-align: center;">
+					<img src="<?php echo $putanjaAPP ?>img/era.png" alt="ERA" />
+				</div>
+				
 			</div>
 		</div>
 		<?php include_once '../include/podnozje.php'; ?>

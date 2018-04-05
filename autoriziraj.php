@@ -5,7 +5,7 @@ if(!isset($_POST["email"]) || !isset($_POST["lozinka"])){
 }
 
 include_once 'konfiguracija.php';
-$izraz=$veza->prepare("select * from operater where 
+$izraz=$veza->prepare("select * from operater where aktivan=true and 
 						email=:email and lozinka=md5(:lozinka)");
 $izraz->execute($_POST);
 $o = $izraz->fetch(PDO::FETCH_OBJ);

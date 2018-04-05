@@ -17,13 +17,24 @@
 			<a href="#">Programi</a>
 			<ul class="menu vertical">
 				<?php 
-				stavkaIzbornika($putanjaAPP . "privatno/smjerovi/index.php", "Smjerovi"); 
-				stavkaIzbornika($putanjaAPP . "privatno/grupe/index.php", "Grupe"); 
-				stavkaIzbornika($putanjaAPP . "privatno/polaznici/index.php", "Polaznici"); 
-				stavkaIzbornika($putanjaAPP . "privatno/predavaci/index.php", "Predavači"); 
-				if($_SESSION[$appID."autoriziran"]->uloga==="admin"){
-					stavkaIzbornika($putanjaAPP . "privatno/operateri/index.php", "Operateri"); 
+				
+				$izraz = $veza->prepare("
+						select * from program order by sifra;
+			
+				");
+				$izraz->execute();
+				$rezultat = $izraz->fetchAll(PDO::FETCH_OBJ);
+				foreach ($rezultat as $red) {
+					if($_SESSION[$appID."autoriziran"]->uloga==="admin" || $red->uloga==""){
+						stavkaIzbornika($putanjaAPP . $red->putanja, $red->izborniknaziv);
+					}
+					
+					
 				}
+				
+				
+				
+				
 				?>
 			</ul>
 		</li>

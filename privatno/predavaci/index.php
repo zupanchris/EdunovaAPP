@@ -1,6 +1,8 @@
 <?php include_once '../../konfiguracija.php'; 
 provjeraOvlasti();
-
+$veza->exec("update programoperater set 
+brojotvaranja=brojotvaranja+1 where program=4 
+and operater=" . $_SESSION[$appID."autoriziran"]->sifra . ";");
 $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 
 ?>
@@ -55,7 +57,8 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 							a.sifra,
 							b.ime, 
 							b.prezime, 
-							b.email
+							b.email,
+							a.slika
 						from predavac a inner join osoba b
 						on a.osoba=b.sifra
 						where concat(b.ime, b.prezime, b.email) 
@@ -87,7 +90,20 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 					?>
 						
 						<tr>
-							<td><?php echo $red->prezime . " " . $red->ime ?></td>
+							<td>
+								<?php 
+								
+								if($red->slika!=null):
+								
+								?>
+								<img style="max-width: 50px;" src="<?php echo $putanjaAPP ?>img/predavaci/<?php echo $red->slika ?>" />
+								<?php else:
+									echo "<i  style=\"color: #b74d4d\"  class=\"fas fa-user fa-3x\"></i>";
+									endif;
+									?>
+									
+								
+								<?php echo $red->prezime . " " . $red->ime ?></td>
 							<td><?php echo $red->email; ?></td>
 							
 							<td>

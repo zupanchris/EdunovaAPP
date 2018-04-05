@@ -4,9 +4,26 @@ $greska=array();
 if(!isset($_GET["sifra"])){
 	
 	
-	if(isset($_POST["sifrapolaznika"])){
+	if(isset($_POST["sifrapredavaca"])){
 		
-		//ovdje dođu kontrole OIB i ostalo
+		
+		if(isset($_FILES["slika"]) && $_FILES["slika"]["error"]==0){
+			
+			$nazivSlike = $_POST["sifrapredavaca"] . "_" . $_FILES["slika"]["name"];
+			
+			$odrediste = "../../img/predavaci/" . $nazivSlike;
+			
+			move_uploaded_file($_FILES["slika"]["tmp_name"], $odrediste);
+			
+			$izraz=$veza->prepare("update predavac set slika=:slika where sifra=:sifra;");
+			$izraz->execute(
+				array(
+					"slika" => $nazivSlike,
+					"sifra" => $_POST["sifrapredavaca"]
+				)
+			);
+		}
+		
 
 	if(count($greska)==0){
 		
@@ -31,7 +48,7 @@ if(!isset($_GET["sifra"])){
 		$izraz->execute(
 			array(
 				"placa" => $_POST["placa"],
-				"sifra" => $_POST["sifrapolaznika"]
+				"sifra" => $_POST["sifrapredavaca"]
 			)
 		);
 		
@@ -48,14 +65,15 @@ if(!isset($_GET["sifra"])){
 	
 	$izraz=$veza->prepare("
 						select 
-							a.sifra as sifrapolaznika,
+							a.sifra as sifrapredavaca,
 							a.placa,
 							b.sifra as sifraosobe,
 							b.oib,
 							b.ime, 
 							b.prezime, 
 							b.email,
-							b.spol
+							b.spol,
+							a.slika
 						from predavac a inner join osoba b
 						on a.osoba=b.sifra
 						where a.sifra=:sifra");
@@ -80,7 +98,9 @@ if(!isset($_GET["sifra"])){
       	<a href="index.php"><i style="color: red;" class="fas fa-chevron-circle-left fa-2x"></i></a>
       	<div class="grid-x grid-padding-x">
 			<div class="large-4 large-offset-4 cell centered">
-				<form class="log-in-form" action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="post">
+				<form class="log-in-form" 
+				enctype="multipart/form-data"
+				action="<?php echo $_SERVER["PHP_SELF"]; ?>" method="post">
 				  <h4 class="text-center">Detalji polaznika</h4>
 				  
 				  <?php 
@@ -89,9 +109,25 @@ if(!isset($_GET["sifra"])){
 				  inputText("ime", "Ivan", $greska);
 				  inputText("prezime", "Horvat", $greska);
 				  inputText("email", "ihorvat@edunova.hr", $greska);
-				  inputText("oib", "25696568545", $greska);
+				  
+				  if(!isset($greska['oib'])): ?>
+	 			  <label>OIB
+				    <input  type="text" id="oib" name="oib" placeholder="Unesite svoj OIB ili generirajte novi ispod" value="<?php echo isset($_POST['oib']) ? $_POST['oib'] : $oib; ?>">
+				    <input type="text" id="oibGenerirani" value="<?php echo $oib; ?>" readonly />
+				    <a href="#" id="oibCopy"><i class="far fa-copy fa-2x"></i></a>
+				    <a href="javascript:window.location.reload(true)"><i class="fas fa-sync fa-2x"></i></a>
+				  </label>
+				  <?php else: ?>
+				   <label class="is-invalid-label">OIB
+				    <input type="text"  id="oib" name="oib" class="is-invalid-input"  
+				    aria-invalid aria-describedby="uuid"
+				    value="<?php echo isset($_POST['oib']) ? $_POST['oib'] : $oib; ?>" >
+				    <span class="form-error is-visible" id="uuid"><?php echo $greska['oib']; ?></span>
+				  </label>
+				  <?php endif;
 				  inputText("placa", "340", $greska);
 				  ?>
+				  
 				 	Spol
 				 	<label for="musko">Muško</label>
 				 	<input type="radio" id="musko" name="spol" value="1"
@@ -102,11 +138,17 @@ if(!isset($_GET["sifra"])){
 				 	<input type="radio" id="zensko" name="spol" value="0" 
 				 	<?php if(!$_POST["spol"]) echo " checked=\"checked\" " ?>
 				 	/>
+				 	<hr />
+				 	<label for="slika">Slika</label>
+				 	<input type="file" name="slika" id="slika" />
 				  
-	
-				  <input type="hidden" name="sifrapolaznika" value="<?php echo $_POST["sifrapolaznika"]; ?>"></input>
+				  <hr />
+				  <?php if($_POST["slika"]!=""): ?>
+				   <img src="<?php echo $putanjaAPP ?>img/predavaci/<?php echo $_POST["slika"] ?>" />
+				  <?php endif;?>
+				  <input type="hidden" name="sifrapredavaca" value="<?php echo $_POST["sifrapredavaca"]; ?>"></input>
 				  <input type="hidden" name="sifraosobe" value="<?php echo $_POST["sifraosobe"]; ?>"></input>
-				  <p><input type="submit" class="button expanded" value="Promjeni polaznika"></input></p>
+				  <p><input type="submit" class="button expanded" value="Promjeni predavača"></input></p>
 				</form>
 				
 			</div>
@@ -117,16 +159,12 @@ if(!isset($_GET["sifra"])){
     </div>
 
     <?php include_once '../../include/skripte.php'; ?>
-    <script>
-    <?php if(isset($greska["naziv"])):?>	
-    		setTimeout(function(){ $("#naziv").focus(); },1000);	
-    <?php elseif(isset($greska["cijena"])):?>	
-	    		setTimeout(function(){ $("#cijena").focus(); },1000);	
-	<?php elseif(isset($greska["upisnina"])):?>	
-	    		setTimeout(function(){ $("#upisnina").focus(); },1000);	
-	<?php elseif(isset($greska["brojsati"])):?>	
-	    		setTimeout(function(){ $("#brojsati").focus(); },1000);	
-	<?php endif; ?>
-    </script>
+    
+  <script>
+  	document.getElementById("oibCopy").addEventListener("click",function(){	
+	var oibGenerirani = parseInt(document.getElementById("oibGenerirani").value);	
+	document.getElementById("oib").value=oibGenerirani;
+	});
+  </script>
   </body>
 </html>

@@ -1,4 +1,7 @@
 <?php
+include_once '../../htmlDOM/simple_html_dom.php';
+$html = file_get_html('http://oib.itcentrala.com/oib-generator/')->plaintext; 
+$oib = mb_substr($html,198,11);
 
 function inputText($name,$placeholder,$greska){
 	if(!isset($greska[$name])): ?>

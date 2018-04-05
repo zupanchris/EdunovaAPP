@@ -10,10 +10,10 @@ $appID="EDUNOVAAPP";
 
 $brojRezultataPoStranici=7;
 if($_SERVER["HTTP_HOST"]==="edunovanastava.byethost33.com"){
-	$host="sql301.byethost18.com";
-	$dbname="b18_21047707_pp16";
-	$dbuser="b18_21047707";
-	$dbpass="Edunova123";
+	$host="sql209.byethost33.com";
+	$dbname="b33_21172594_edunovapp16";
+	$dbuser="b33_21172594";
+	$dbpass="Edunova123.";
 	$dev=false;
 }else{
 	$host="localhost";

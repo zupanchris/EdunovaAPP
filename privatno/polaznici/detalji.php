@@ -89,7 +89,23 @@ if(!isset($_GET["sifra"])){
 				  inputText("ime", "Ivan", $greska);
 				  inputText("prezime", "Horvat", $greska);
 				  inputText("email", "ihorvat@edunova.hr", $greska);
-				  inputText("oib", "25696568545", $greska);
+				  
+				  if(!isset($greska['oib'])): ?>
+	 			  <label>OIB
+				    <input  type="text" id="oib" name="oib" placeholder="Unesite svoj OIB ili generirajte novi ispod" value="<?php echo isset($_POST['oib']) ? $_POST['oib'] : $oib; ?>">
+				    <input type="text" id="oibGenerirani" value="<?php echo $oib; ?>" readonly />
+				    <a href="#" id="oibCopy"><i class="far fa-copy fa-2x"></i></a>
+				    <a href="javascript:window.location.reload(true)"><i class="fas fa-sync fa-2x"></i></a>
+				  </label>
+				  <?php else: ?>
+				   <label class="is-invalid-label">OIB
+				    <input type="text"  id="oib" name="oib" class="is-invalid-input"  
+				    aria-invalid aria-describedby="uuid"
+				    value="<?php echo isset($_POST['oib']) ? $_POST['oib'] : $oib; ?>" >
+				    <span class="form-error is-visible" id="uuid"><?php echo $greska['oib']; ?></span>
+				  </label>
+				  <?php endif;
+				  
 				  inputText("brojugovora", date("Y" . "/18"), $greska);
 				  ?>
 				 	Spol
@@ -131,5 +147,11 @@ if(!isset($_GET["sifra"])){
 	    		setTimeout(function(){ $("#brojsati").focus(); },1000);	
 	<?php endif; ?>
     </script>
+  	<script>
+  	document.getElementById("oibCopy").addEventListener("click",function(){	
+	var oibGenerirani = parseInt(document.getElementById("oibGenerirani").value);	
+	document.getElementById("oib").value=oibGenerirani;
+	});
+  	</script>
   </body>
 </html>

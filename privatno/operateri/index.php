@@ -1,6 +1,8 @@
 <?php include_once '../../konfiguracija.php'; 
 provjeraOvlasti();
-
+$veza->exec("update programoperater set 
+brojotvaranja=brojotvaranja+1 where program=5 
+and operater=" . $_SESSION[$appID."autoriziran"]->sifra . ";");
 $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 
 ?>
@@ -26,32 +28,10 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 					
 					$uvjet = "%" . (isset($_GET["uvjet"]) ? $_GET["uvjet"] : "") . "%";
 					
-					if(isset($_SESSION['brojRedova']) && ($_GET['uvjet']==""))
-					{
-					$ukupnoRedova = $_SESSION['brojRedova'];							
-					}
-					else if(isset($_SESSION['trazilica']) && ($_GET['uvjet'])===$_SESSION['trazeniPojam'])
-					{
-					$ukupnoRedova = $_SESSION['trazilica'];			
-					}
-					else if(isset($_SESSION['trazilica']) && ($_GET['uvjet'])!==$_SESSION['trazeniPojam'])
-					{
-					unset($_SESSION['trazilica']);					
-					unset($_SESSION['trazeniPojam']);
-					dbPretraga('trazilica', $veza, $uvjet);
-					$ukupnoRedova = $_SESSION['trazilica'];
-					$_SESSION['trazeniPojam'] = $_GET['uvjet'];
-					}
-					else if(isset($_SESSION['brojRedova']) && ($_GET['uvjet']))
-					{
-					dbPretraga('trazilica', $veza, $uvjet);
-					$ukupnoRedova = $_SESSION['trazilica'];
-					$_SESSION['trazeniPojam'] = $_GET['uvjet'];
-					}
-					else{
-					dbPretraga('brojRedova', $veza, $uvjet);
-					$ukupnoRedova = $_SESSION['brojRedova'];
-					}					
+					$izraz = $veza->prepare("select count(*) from operater 
+					where concat(ime,prezime,email,uloga) like :uvjet");
+					$izraz->execute(array("uvjet"=>$uvjet));
+					$ukupnoRedova = $izraz->fetchColumn();
 					$ukupnoStranica = ceil($ukupnoRedova/$brojRezultataPoStranici);
 					
 					if($stranica<1){
@@ -61,18 +41,18 @@ $stranica = isset($_GET["stranica"]) ? $_GET["stranica"] : 1;
 						$stranica=$ukupnoStranica;
 					}
 					
-					//create index uvjet on operater (ime,prezime,email,uloga);
-
-					//select * from operater use index (uvjet);
 
 					$izraz = $veza->prepare("select * from operater 
-					use index (uvjet) where concat(ime,prezime,email,uloga) like :uvjet
+					where concat(ime,prezime,email,uloga) like :uvjet
 					order by uloga, prezime, ime limit :stranica, :brojRezultataPoStranici");
 					$izraz->bindValue("stranica", $stranica* $brojRezultataPoStranici -  $brojRezultataPoStranici , PDO::PARAM_INT);
 					$izraz->bindValue("brojRezultataPoStranici", $brojRezultataPoStranici, PDO::PARAM_INT);
 					$izraz->bindParam("uvjet", $uvjet);
 					$izraz->execute();
 					$rezultati = $izraz->fetchAll(PDO::FETCH_OBJ);
+				if($ukupnoRedova>$brojRezultataPoStranici){
+					include 'paginacija.php';
+				}
 				  ?>
 				<table>
 					<thead>
